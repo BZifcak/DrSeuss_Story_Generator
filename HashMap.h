@@ -146,7 +146,8 @@ public:
 	hashMap(int hashfn, int collfn);
 	~hashMap();
 	void addKeyandValue(string k, string v);
-	int hashMap::getIndex(string k) {
+
+	int hashMap::getIndex(string k);
 	//This method simply uses whichHashFn to determine which hashing function to call with the key.
 	// it then returns that index
 	int hashFn1(string k);  // the hash function I'm giving you for testing.  Takes the string and returns an index
@@ -165,7 +166,7 @@ public:
 	int findKeyIndex(string k);  //finds the key in the array and returns its index.  If it's not in the array, returns -1
 
 	void printMap();  //I wrote and included this solely to check if everything was working.
-}
+};
 
 
 
