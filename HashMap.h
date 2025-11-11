@@ -146,6 +146,7 @@ public:
 	hashMap(int hashfn, int collfn);
 	~hashMap();
 	void addKeyandValue(string k, string v);
+
 	int hashMap::getIndex(string k) {
 	//This method simply uses whichHashFn to determine which hashing function to call with the key.
 	// it then returns that index
