@@ -54,10 +54,10 @@ void hNode::addValue(string v) {
 
 }
 string hNode::getRandValue() {
-    if (valuesCt = 0) {
+    if (valuesCt == 0) {
         return "";
     }
-    int random = rand() % (valuesCt -1);
+    int random = rand() % valuesCt;
     return valueArr[random];
     // this is another short method - just generates a random number less than the
     // count of the values in teh valueArr, and then returns the word at that index
