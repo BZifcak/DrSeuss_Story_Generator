@@ -39,6 +39,8 @@ void voice::readFile() {
     }
     ht->addKeyandValue(key,value);
     cout << endl;
+    cout<< "finished reading " << fn << " with hashfn: "<< ht->whichHashFn <<" and collfn: " << ht->whichCollisionFn << endl;
+
     infile.close();
 }
 void voice::writeFile() {
@@ -46,6 +48,7 @@ void voice::writeFile() {
     outfile << "Hash Function Collisions: " << ht->hashCollisionsCt << ", " << "Collision count: " << ht->collisionsCt << endl;
     outfile << ht->first << " ";
     string key = "";
+    //cout << "ht->first:" << ht->first << "findKeyIndex returned: "<< ht->findKeyIndex(ht->first) << endl;
     string value = ht->map[ht->findKeyIndex(ht->first)]->getRandValue();
     int ct = 0;
     int len = 0;
@@ -57,8 +60,20 @@ void voice::writeFile() {
             len = 0;
         }
         else len++;
-        value = ht->map[ht->findKeyIndex(key)]->getRandValue();
-        ct ++;
+        int index = ht->findKeyIndex(key);
+        //std::cout << "found "<<key<<" at index: " << index << std::endl;
+
+        if (index < 0 || index >= ht->mapSize || ht->map[index] == nullptr) {
+            //std::cout << "dereferencing null from writeFile for key: " << key << std::endl;
+            value = ht->first; // soft exits error
+            continue;
+        } else {
+            value = ht->map[index]->getRandValue();
+        }
+        //cout << "made it past dereferencing" << endl;
+        ct++;
+
     }
+    cout<< "finished writing " << newfile << endl;
     outfile.close();
 }
