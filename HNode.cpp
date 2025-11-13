@@ -42,9 +42,10 @@ hNode::hNode(string s, string v){
 }
 void hNode::addValue(string v) {
     if (valuesCt >=450) {
-        std::cout<<"Attempted to add more values than allocated for"<<std::endl;
+        std::cout<<"Attempted to add more values than originally allocated for"<<std::endl;
         return;
     }
+    valuesCt++;
     valueArr[valuesCt-1] = v;
     // this method is short - you just add v to the end of the values in the valueArr and
     // then increase the valuesCt.
