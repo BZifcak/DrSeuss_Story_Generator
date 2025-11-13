@@ -15,6 +15,7 @@ voice::voice(string f1,string f2, int hashfn, int collfn) {
     ht->first = "I";
     newfile = f2;
     fn = f1;
+    //cout << "hello from voice constructor" << endl;
  //   readFile();
  //   writeFile();
 }
@@ -29,9 +30,9 @@ void voice::readFile() {
     infile >> key;
 
     while (infile >> value) {          // loop getting single characters
-       // cout << key <<": " << value << endl;
+        //cout << key <<": " << value << endl;
         ht->addKeyandValue(key,value);
-       // cout << " here in read " << endl;
+        //cout << " here in read " << endl;
         key = value;
         value = "";
       //  cout << " in read " << endl;
