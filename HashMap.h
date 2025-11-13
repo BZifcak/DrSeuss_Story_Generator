@@ -159,6 +159,8 @@ public:
 	int collFn1(string k, int i);  // the coll function I'm giving you for testing.  Takes the string and returns an index
 	int collFn2(string k, int i);  // your collision function 1
 	int collFn3(string k, int i);  // your collision function 2
+	int secondaryHash(string k);
+
 	void ckIfNeedToRehash(); // this is the function that checks to see if the map is 70% full
 		// or more.  If it's over 70% full, it should call the rehash function
 	int getClosestPrime();  // I used a binary search in the array to find the closest prime to double the map Size, and then set mapSize to that new prime

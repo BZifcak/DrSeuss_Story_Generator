@@ -15,6 +15,7 @@ hashMap::hashMap(int hfn, int cfn) {
 	// whichCollFn should be set to cfn
 	whichHashFn = hfn;
 	whichCollisionFn = cfn;
+	first = "I";
 	// the first is just the very first string used for output.  In the voice constructor
 	//     I set first to "I" but you can choose any word in the input file.
 	// Set teh mapSize to 57 to start with if you want to get the same ouput I got for the
@@ -61,10 +62,13 @@ void hashMap::addKeyandValue(string k, string v) {
 	} else if (map[index]->key == k) {
 		map[index]->addValue(v);
 	} else if (map[index]->key != k) {
-		cout<< "collision when inserting : " << k << endl;
+		//cout<< "collision when inserting : " << k << endl;
 		index = dealWithCollisions(k, index);
-		if (index >=0 && index < mapSize) {
-			insertNewKeyandValue(k,v,index);
+		if (!(index >=0 && index < mapSize)) {cout<<"invalid index from collision fucntion. returned :" << index << endl;}
+		if (map[index] == nullptr) {
+			insertNewKeyandValue(k, v, index);
+		} else if (map[index]->key == k) {
+			map[index]->addValue(v);
 		}
 	}
 
@@ -119,37 +123,72 @@ int hashMap::collFn1(string k, int i) {
 		}
 		ct ++;
 	}
-	if (ct == mapSize) {cout <<"ERROR" << endl; return -1;}
+	//if (ct == mapSize) {cout <<"ERROR" << endl; return -1;}
 	return i;
 }
-/*Quadratic Probing*/
+/* Collision Function 2: Quadratic Probing
+ * Resolves collisions by jumping in quadratic steps: i + ct^2.
+ * Reduces clustering compared to linear probing, but can fail if mapSize isn't prime.
+ * Sensitive to base index and load factor — may miss valid slots if dispersion is poor.
+ */
 int hashMap::collFn2(string k,  int i) {
 	int ct = 0;
 	while (ct < mapSize) {
-		i = (i + ct * ct) % mapSize;
+		i = (i + ct * ct) % mapSize; // quadratic step
 		if (map[i] == nullptr || map[i]->key == k) {
 			collisionsCt += ct;
 			return i;
 		}
 		ct ++;
 	}
-	if (ct == mapSize) {cout <<"ERROR" << endl; return -1;}
+	//if (ct == mapSize) {cout <<"ERROR" << endl; return -1;}
 	return i;
 }
-/*Double Hash (because it's cool)*/
+/* Collision Function 3: Double Hashing (because its fricken cool)
+ * Uses a secondary hash function to compute a step size, then probes with: base + ct * step.
+ * This avoids clustering and gives excellent dispersion — but only if step is valid and mapSize is prime.
+ * Requires careful overflow handling and bounds checks.
+ */
 int hashMap::collFn3(string k, int i) {
-	int ct = 1;
-	while (ct < mapSize) {
-		i = (getIndex(k)  + ( ct * ((int)pow(k[0],3) + 1)) )% mapSize;
-		if (map[i] == nullptr || map[i]->key == k) {
-			collisionsCt += ct -1;
-			return i;
+	// Safely wrap base index
+	int base = getIndex(k) % mapSize;
+	if (base < 0) base += mapSize;
+
+	// Ensure step is valid and non-zero
+	int step = secondaryHash(k);
+	if (step <= 0) step = 1;
+	for (int ct = 0; ct < mapSize; ct++) {
+		// Use size_t to prevent overflow during probe calculation
+		size_t probe = (static_cast<size_t>(base) + static_cast<size_t>(ct) * step) % mapSize;
+		// Defensive bounds check
+		if (probe >= static_cast<size_t>(mapSize)) {return -1;}
+		// Check for empty slot or matching key
+		if (map[probe] == nullptr || map[probe]->key == k) {
+			collisionsCt += ct;
+			return static_cast<int>(probe);
 		}
-		ct ++;
 	}
-	if (ct == mapSize) {cout <<"ERROR" << endl; return -1;}
-	return i;
+	//std::cout << "ERROR: Could not resolve collision for key: " << k << std::endl;
+	return -1;
 }
+
+
+
+int hashMap::secondaryHash(string k) {
+	int h = 0;
+	for (char c : k) {
+		h += static_cast<int>(c);
+	}
+
+	if (mapSize < 2) {
+		//std::cout << "ERROR: mapSize too small for secondaryHash" << std::endl;
+		return 1;
+	}
+
+	h = h % (mapSize - 1);
+	return (h <= 0) ? 1 : h;  // ensure non-zero step
+}
+
 void hashMap::insertNewKeyandValue(string k, string v, int ind) {
 	map[ind] = new hNode(k,v);
 	keysCt++;
@@ -174,37 +213,39 @@ int hashMap::hashFn1(string k) {
 	//cout << "hash index " << (h_index%mapSize) << endl;
 	return h_index%mapSize;
 }
-/*Hash Function 2
- * Key: sum of the sequence of values squared from 0 to ascii value for each character in k
- * and then of course, mod by mapSize
+/* Hash Function 2
+ * Another simple hash function that sums ASCII values of all characters.
+ * Slightly cleaner than hashFn1, but still suffers from poor distribution.
+ * Can produce large base indices that interact poorly with quadratic or double hashing.
  */
 int hashMap::hashFn2(string k) {
-	int h_index = 0;
-	int len = k.length();
-	for (int i = 0; i < len; i++) {
-		int charL = (int)k[i];
-		while (charL > 0) {
-			int sumSquares = (charL * (charL + 1) * (2 * charL + 1)) / 6;
-			h_index += sumSquares;
-			charL--;
-		}
+	int hash = 0;
+	for (char c : k) {
+		hash += static_cast<int>(c);// accumulate ASCII values
+
 	}
-	cout << "hash index " << (h_index%mapSize) << endl;
-	return h_index%mapSize;
+	return hash % mapSize;
 }
-/*Hash function 3*/
+
+
+
+/* Hash Function 3
+ * A more complex hash function that weights characters by their position squared.
+ * This creates more dispersion and reduces collisions for similar strings.
+ * Still not cryptographically strong, but better for varied input.
+ */
 int hashMap::hashFn3(string k) {
 	int h_index = 0;
 	for (int i = k.length()-1; i >= 0; i--) {
-		h_index += pow(i,2)* (((int)k[i])/2);
+		h_index += (i*i) * (((int)k[i])/2);// weighted contribution
 	}
-	cout << "hash index " << (h_index%mapSize) << endl;
-	return h_index%mapSize;
+	//cout << "hash index " << (h_index%mapSize) << endl;
+	return (h_index + mapSize) % mapSize; // ensure non-negative index
 }
 void hashMap::ckIfNeedToRehash() {
 	float percentFull = ((float)(keysCt) / (float)(mapSize)) * 100;
 	if (percentFull >= 70) {
-		cout<< "rehashed because percentFull:"<< percentFull << endl;
+		//cout<< "rehashed because percentFull:"<< percentFull << endl;
 		reHash();
 	}
 	// this is the function that checks to see if the map is 70% full or more.  If it's over 70%
@@ -217,7 +258,7 @@ int hashMap::getClosestPrime() {
 	int newSize = mapSize*2;
 	for ( int i = 0; i < primeSize; i++) {
 		if (newSize <= primes[i]) {
-			cout << "map size: " << mapSize << " prime switching to: " << primes[i] << endl;
+			//cout << "map size: " << mapSize << " prime switching to: " << primes[i] << endl;
 			return primes[i];
 		}
 	}
@@ -231,6 +272,7 @@ int hashMap::findKeyIndex(string k) {
 	// collision function) returns the index of where the key is located in the
 	// map.
 	int index = getIndex(k);
+
 	if (map[index]->key == k) {
 		return index;
 	} else {
@@ -252,7 +294,7 @@ void hashMap::reHash() {
 	}
 	for (int i = 0; i < oldMapSize; i++) {
 		if (map[i] != nullptr) {
-			cout << "key being rehashed: " << map[i]->key << endl;
+			//cout << "key being rehashed: " << map[i]->key << endl;
 			newMap[getIndex(map[i]->key)] =  map[i];
 		}
 	}
@@ -269,7 +311,7 @@ void hashMap::reHash() {
 hashMap::~hashMap() {
 	for (int i = 0; i < mapSize; i++) {
 		if (map[i] != nullptr) {
-			cout<<"at index: " << i << " deleting: " << map[i]->key <<  endl;
+			//cout<<"at index: " << i << " deleting: " << map[i]->key <<  endl;
 			delete map[i];
 		}
 	}
