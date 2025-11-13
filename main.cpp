@@ -4,7 +4,6 @@
 #include <stdlib.h>
 
 using namespace std;
-/*******************************************************************************/
 int main() {
     srand(time(NULL));
     int hashfn; // for which hash fn to use
@@ -52,20 +51,11 @@ int main() {
      * it later in the writeFile method, but it might come in useful in the reHash method as
      * well.
      * */
-    k = new voice("MedGEaH.txt","SecondTestOut.txt", hashfn, collfn);
-    k->readFile();
-    k->ht->printMap();
-    /* End of test 3*/
-    delete k;
-    hashfn = 2;
-    k = new voice("ShortGEaH.txt","FirstTestOut.txt", hashfn, collfn);
-    k->readFile();
-    k->ht->printMap();
-    delete k;
-    k = new voice("MedGEaH.txt","FirstTestOut.txt", hashfn, collfn);
-    k->readFile();
-    k->ht->printMap();
-    /* Part 4:
+     k = new voice("MedGEaH.txt","SecondTestOut.txt", hashfn, collfn);
+     k->readFile();
+     k->ht->printMap();
+     /* End of test 3*/
+ /* Part 4:
   * from now on I can't give you definitive output because it depends on what hashing function you write and what
   * collision function you write.
   * I am giving you the steps for how I'd approach this
@@ -104,26 +94,32 @@ int main() {
     k->writeFile();
 
     And, once that's working:
-    add the following code:
+    add the following code: */
     k = new voice("DrSeuss.txt","SeussOut2_2.txt", 2, 2);
     k->readFile();
     k->writeFile();
     delete k;
     k = new voice("DrSeuss.txt","SeussOut3_2.txt", 3, 2);
+    k->readFile();
+    k->writeFile();
     delete k;
     k = new voice("DrSeuss.txt","SeussOut2_3.txt", 2, 3);
+    k->readFile();
+    k->writeFile();
     delete k;
     k = new voice("DrSeuss.txt","SeussOut3_3.txt", 3, 3);
-  *
+    k->readFile();
+    k->writeFile();
+  /*
   *I'm including my SeussOut1_1.txt at the very bottom
   */
-    //delete k;
-    //k = new voice("DrSeuss.txt","SeussOut1_1.txt", 1, 1);
-    //k->readFile();
-    //k->writeFile();
-    //   return 0;
+ delete k;
+ k = new voice("DrSeuss.txt","SeussOut1_1.txt", 1, 1);
+ k->readFile();
+ k->writeFile();
+    return 0;
 }
-
+/*******************************************************************************/
 /* Test 1 output:
 * In printMap(): Included for testing purposes!!! MapSize: 57, KeysCt: 35
 car! (1): Sam!,
